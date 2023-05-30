@@ -1,4 +1,5 @@
-local Cosmoble = { activeTables = {}}
+--ServerScriptStorage
+local Cosmoble = {activeTables = {}}
 
 local function tblToString(tbl)
 	local str = "{"
@@ -65,10 +66,10 @@ function Cosmoble.new(name: string, tbl: {})
 			end,
 			__tostring = function() return tblToString(tbl) end
 		})
-		Cosmoble.activeTables[name].proxyTable = proxyTable
+		Cosmoble.activeTables[name].proxyTableAuto = proxyTable
 		return proxyTable
 	else
-		return Cosmoble.activeTables[name].proxyTable
+		return Cosmoble.activeTables[name].proxyTableAuto
 	end
 end
 
