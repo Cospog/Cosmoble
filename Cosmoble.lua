@@ -65,7 +65,10 @@ function Cosmoble.new(name: string, tbl: {})
 			end,
 			__tostring = function() return tblToString(tbl) end
 		})
+		Cosmoble.activeTables[name].proxyTable = proxyTable
 		return proxyTable
+	else
+		return Cosmoble.activeTables[name].proxyTable
 	end
 end
 
