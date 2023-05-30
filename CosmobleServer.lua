@@ -16,7 +16,7 @@ local function tblToString(tbl)
 	return str.."}"
 end
 
-function Cosmoble.new(name: string, tbl: {})
+function Cosmoble.new(name: string, tbl: {}, players: {Player})
 	if not Cosmoble.activeTables[name] then
 		Cosmoble.activeTables[name] = {}
 		local proxyTable = {}
@@ -24,6 +24,13 @@ function Cosmoble.new(name: string, tbl: {})
 			if Cosmoble.activeTables[name] ~= {} then
 				for i,v in pairs(Cosmoble.activeTables[name]) do
 					v(tbl, key, val)
+				end
+				if players then
+					for i,v in pairs(players) do
+						game.ReplicatedStorage.CosmobleShared.CosmobleEvent:FireClient(v, name, tbl, key, val)
+					end
+				else
+					game.ReplicatedStorage.CosmobleShared.CosmobleEvent:FireAllClients(name, tbl, key, val)
 				end
 			end
 		end
