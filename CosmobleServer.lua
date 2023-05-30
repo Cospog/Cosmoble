@@ -1,4 +1,4 @@
---ServerScriptStorage
+--ServerScriptService
 local Cosmoble = {activeTables = {}}
 
 local function tblToString(tbl)
