@@ -115,10 +115,10 @@ function Cosmoble:disconnectCosmoble(cosmobleName: string, connectionName: strin
 	end
 end
 
-game.ReplicatedStorage.CosmobleShared.CosmobleFunction.OnServerInvoke:Connect(function(plr: Player, cosmobleName: string)
+game.ReplicatedStorage.CosmobleShared.CosmobleEvent.OnServerEvent:Connect(function(plr, cosmobleName)
 	local receivedCosmoble = Cosmoble.get(cosmobleName)
 	if receivedCosmoble then
-		return receivedCosmoble.original()
+		return Cosmoble.get(cosmobleName).original()
 	end
 end)
 
