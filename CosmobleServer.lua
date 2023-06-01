@@ -16,25 +16,24 @@ local function tblToString(tbl)
 	return str.."}"
 end
 
-function Cosmoble.new(name: string, tbl: {}, players: {Player})
+function Cosmoble.new(name: string, tbl: {}, player)
 	if not Cosmoble.activeTables[name] then
 		Cosmoble.activeTables[name] = {}
 		local proxyTable = {}
-		local function sendChanges(tbl, key, val)
+		local function sendChanges(key, val)
 			if Cosmoble.activeTables[name] ~= {} then
 				for i,v in pairs(Cosmoble.activeTables[name]) do
-					v(tbl, key, val)
-				end
-				if players then
-					for i,v in pairs(players) do
-						game.ReplicatedStorage.CosmobleShared.CosmobleEvent:FireClient(v, name, tbl, key, val)
+					if i ~= "proxyTableAuto" then
+						v(key, val)
 					end
+				end
+				if player then
+					game.ReplicatedStorage.CosmobleShared.CosmobleEvent:FireClient(player, name, key, val)
 				else
-					game.ReplicatedStorage.CosmobleShared.CosmobleEvent:FireAllClients(name, tbl, key, val)
+					game.ReplicatedStorage.CosmobleShared.CosmobleEvent:FireAllClients(name, key, val)
 				end
 			end
 		end
-
 		proxyTable.clear = function() return getmetatable(proxyTable).__newindex(proxyTable, nil) end
 		proxyTable.insert = function(value: any) return getmetatable(proxyTable).__newindex(proxyTable, value) end
 		proxyTable.remove = function(pos: number) return getmetatable(proxyTable).__newindex(proxyTable, pos, nil) end
@@ -57,7 +56,11 @@ function Cosmoble.new(name: string, tbl: {}, players: {Player})
 			__index = function(t, k)
 				local val = tbl[k]
 				if type(val) == "table" then
-					val = Cosmoble.new("auto_"..tostring(k), val)
+					if player then
+						val = Cosmoble.new(player.UserId.."_auto_"..tostring(k), val, player)
+					else
+						val = Cosmoble.new("auto_"..tostring(k), val, player)
+					end
 				end
 				return val
 			end,
@@ -65,10 +68,13 @@ function Cosmoble.new(name: string, tbl: {}, players: {Player})
 				print(tostring(k).." "..tostring(v))
 				if not k then
 					tbl = {}
+					sendChanges(tbl)
 				elseif not v then
 					table.insert(tbl, k)
+					sendChanges(tbl, k)
 				else
 					tbl[k] = v
+					sendChanges(k, v)
 				end
 			end,
 			__tostring = function() return tblToString(tbl) end
