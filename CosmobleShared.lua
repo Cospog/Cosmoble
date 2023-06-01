@@ -27,7 +27,7 @@ function Cosmoble:disconnectCosmoble(cosmobleName: string, connectionName: strin
 end
 
 function Cosmoble.get(cosmobleName: string)
-	return script.CosmobleFunction:InvokeServer(cosmobleName)
+	return script.CosmobleEvent:FireServer(cosmobleName)
 end
 
 return Cosmoble
