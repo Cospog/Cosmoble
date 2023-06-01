@@ -1,6 +1,7 @@
 --ServerScriptService
 local Cosmoble = {activeTables = {}}
 
+
 local function tblToString(tbl)
 	local str = "{"
 	for i, v in pairs(tbl) do
@@ -36,7 +37,7 @@ function Cosmoble.new(name: string, tbl: {}, player)
 		end
 		proxyTable.clear = function() return getmetatable(proxyTable).__newindex(proxyTable, nil) end
 		proxyTable.insert = function(value: any) return getmetatable(proxyTable).__newindex(proxyTable, value) end
-		proxyTable.remove = function(pos: number) return getmetatable(proxyTable).__newindex(proxyTable, pos, nil) end
+		proxyTable.remove = function(pos: number) return getmetatable(proxyTable).__newindex(proxyTable, pos, "delete") end
 		proxyTable.find = function(needle: any, init: number) return table.find(tbl, needle, init) end
 		proxyTable.concat = function(sep: string, i: number, j: number) return table.concat(tbl, sep, i, j) end
 		proxyTable.clone = function() return table.clone(tbl) end
@@ -51,7 +52,7 @@ function Cosmoble.new(name: string, tbl: {}, player)
 				end
 			end
 		end
-
+		proxyTable.original = function() return tbl end
 		setmetatable(proxyTable, {
 			__index = function(t, k)
 				local val = tbl[k]
@@ -66,7 +67,10 @@ function Cosmoble.new(name: string, tbl: {}, player)
 			end,
 			__newindex = function(t, k, v)
 				print(tostring(k).." "..tostring(v))
-				if not k then
+				if v == "delete" then
+					table.remove(tbl, k)
+					sendChanges(k, nil)
+				elseif not k then
 					tbl = {}
 					sendChanges(tbl)
 				elseif not v then
@@ -86,6 +90,11 @@ function Cosmoble.new(name: string, tbl: {}, player)
 	end
 end
 
+function Cosmoble.get(cosmobleName: string)
+	if Cosmoble.activeTables[cosmobleName] then
+		return Cosmoble.activeTables[cosmobleName].proxyTableAuto
+	end
+end
 function Cosmoble.destroy(name: string)
 	if Cosmoble.activeTables[name] then
 		Cosmoble.activeTables[name] = nil
@@ -105,5 +114,12 @@ function Cosmoble:disconnectCosmoble(cosmobleName: string, connectionName: strin
 		cosmobleTblData[connectionName] = nil
 	end
 end
+
+game.ReplicatedStorage.CosmobleShared.CosmobleFunction.OnClientInvoke:Connect(function(plr: Player, cosmobleName: string)
+	local receivedCosmoble = Cosmoble.get(cosmobleName)
+	if receivedCosmoble then
+		return receivedCosmoble.original()
+	end
+end)
 
 return Cosmoble
