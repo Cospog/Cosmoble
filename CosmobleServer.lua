@@ -36,7 +36,7 @@ function Cosmoble.new(name: string, tbl: {}, player)
 			end
 		end
 		proxyTable.clear = function() return getmetatable(proxyTable).__newindex(proxyTable, nil) end
-		proxyTable.insert = function(value: any) return getmetatable(metaproxyTable).__newindex(proxyTable, value) end
+		proxyTable.insert = function(value: any) return getmetatable(proxyTable).__newindex(proxyTable, value) end
 		proxyTable.remove = function(pos: number) return getmetatable(proxyTable).__newindex(proxyTable, pos, "delete") end
 		proxyTable.find = function(needle: any, init: number) return table.find(tbl, needle, init) end
 		proxyTable.concat = function(sep: string, i: number, j: number) return table.concat(tbl, sep, i, j) end
