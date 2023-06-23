@@ -36,7 +36,7 @@ function Cosmoble.new(name: string, tbl: {}, player)
 			end
 		end
 		proxyTable.clear = function() return getmetatable(proxyTable).__newindex(proxyTable, nil) end
-		proxyTable.insert = function(value: any) return getmetatable(proxyTable).__newindex(proxyTable, value) end
+		proxyTable.insert = function(value: any) return getmetatable(metaproxyTable).__newindex(proxyTable, value) end
 		proxyTable.remove = function(pos: number) return getmetatable(proxyTable).__newindex(proxyTable, pos, "delete") end
 		proxyTable.find = function(needle: any, init: number) return table.find(tbl, needle, init) end
 		proxyTable.concat = function(sep: string, i: number, j: number) return table.concat(tbl, sep, i, j) end
@@ -90,30 +90,31 @@ function Cosmoble.new(name: string, tbl: {}, player)
 	end
 end
 
-function Cosmoble.get(cosmobleName: string)
+function Cosmoble.get(cosmobleName: any)
 	if Cosmoble.activeTables[cosmobleName] then
 		return Cosmoble.activeTables[cosmobleName].proxyTableAuto
 	end
 end
-function Cosmoble.destroy(name: string)
+function Cosmoble.destroy(name: any)
 	if Cosmoble.activeTables[name] then
 		Cosmoble.activeTables[name] = nil
 	end
 end
 
-function Cosmoble:connectCosmoble(cosmobleName: string, connectionName: string, func)
+function Cosmoble:connectCosmoble(cosmobleName: any, connectionName: string, func)
 	local cosmobleTblData = Cosmoble.activeTables[cosmobleName]
 	if cosmobleTblData and not cosmobleTblData[connectionName] then
 		cosmobleTblData[connectionName] = func
 	end
 end
 
-function Cosmoble:disconnectCosmoble(cosmobleName: string, connectionName: string)
+function Cosmoble:disconnectCosmoble(cosmobleName: any, connectionName: string)
 	local cosmobleTblData = Cosmoble.activeTables[cosmobleName]
 	if cosmobleTblData and cosmobleTblData[connectionName] then
 		cosmobleTblData[connectionName] = nil
 	end
 end
+
 
 game.ReplicatedStorage.CosmobleShared.CosmobleFunction.OnServerInvoke = function(plr, cosmobleName)
 	local receivedCosmoble = Cosmoble.get(cosmobleName)
