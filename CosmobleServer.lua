@@ -17,7 +17,7 @@ local function tblToString(tbl)
 	return str.."}"
 end
 
-function Cosmoble.new(name: string, tbl: {}, player)
+function Cosmoble.new(name: any, tbl: {}, player)
 	if not Cosmoble.activeTables[name] then
 		Cosmoble.activeTables[name] = {}
 		local proxyTable = {}
@@ -36,9 +36,15 @@ function Cosmoble.new(name: string, tbl: {}, player)
 			end
 		end
 		proxyTable.clear = function() return getmetatable(proxyTable).__newindex(proxyTable, nil) end
-		proxyTable.insert = function(value: any) return getmetatable(proxyTable).__newindex(proxyTable, value) end
+		proxyTable.insert = function(first: any, value: any)
+			if value then
+				return getmetatable(proxyTable).__newindex(proxyTable, value, "index")
+			else
+				return getmetatable(proxyTable).__newindex(proxyTable, first)
+			end
+		end
 		proxyTable.remove = function(pos: number) return getmetatable(proxyTable).__newindex(proxyTable, pos, "delete") end
-		proxyTable.find = function(needle: any, init: number) return table.find(tbl, needle, init) end
+		proxyTable.find = function(needle: any, init: number)return table.find(tbl, needle, init) end
 		proxyTable.concat = function(sep: string, i: number, j: number) return table.concat(tbl, sep, i, j) end
 		proxyTable.clone = function() return table.clone(tbl) end
 		proxyTable.move = function(a: number, b: number, t: number, dst: {}) return table.move(tbl, a, b, t, dst) end
@@ -60,13 +66,16 @@ function Cosmoble.new(name: string, tbl: {}, player)
 					if player then
 						val = Cosmoble.new(player.UserId.."_auto_"..tostring(k), val, player)
 					else
-						val = Cosmoble.new("auto_"..tostring(k), val, player)
+						val = Cosmoble.new("auto_"..tostring(k), val)
 					end
 				end
 				return val
 			end,
 			__newindex = function(t, k, v)
-				print(tostring(k).." "..tostring(v))
+				if v == "insert" then
+					table.insert(tbl, 1, k)
+					sendChanges(tbl, k)
+				end
 				if v == "delete" then
 					table.remove(tbl, k)
 					sendChanges(k, nil)
@@ -83,6 +92,15 @@ function Cosmoble.new(name: string, tbl: {}, player)
 			end,
 			__tostring = function() return tblToString(tbl) end
 		})
+		for i,v in pairs(tbl) do
+			if type(v) == "table" then
+				if player then
+					v = Cosmoble.new(player.UserId.."_auto_"..tostring(i), v, player)
+				else
+					v = Cosmoble.new("auto_"..tostring(i), v)
+				end
+			end
+		end
 		Cosmoble.activeTables[name].proxyTableAuto = proxyTable
 		return proxyTable
 	else
